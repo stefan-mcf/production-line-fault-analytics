@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "fixture": "synthetic",
+  "target": {
+    "station": "test_bench",
+    "code": "CYCLE_ABORT"
+  },
+  "lookback_seconds": 240,
+  "ingestion": {
+    "input_rows": 23,
+    "accepted_events": 16,
+    "duplicate_rows": 3,
+    "invalid_rows": 2,
+    "conflict_rows": 2
+  },
+  "target_counts": {
+    "raw_matching_rows": 7,
+    "valid_matching_rows": 6,
+    "reconciled_episodes": 5
+  },
+  "profile_reload": {
+    "condition": {
+      "station": "programmer",
+      "code": "PROFILE_RELOAD"
+    },
+    "quarantined_event_id": "PROFILE-588",
+    "as_reconciled": {
+      "support": 2,
+      "total_episodes": 5,
+      "episode_ids": [
+        "ABORT-624",
+        "ABORT-652"
+      ]
+    },
+    "if_admitted": [
+      {
+        "origin": {
+          "batch": "events-01.csv",
+          "row": 12
+        },
+        "cleared_at": "2042-10-16T09:41:04Z",
+        "support": 3,
+        "total_episodes": 5,
+        "episode_ids": [
+          "ABORT-624",
+          "ABORT-652",
+          "ABORT-667"
+        ]
+      },
+      {
+        "origin": {
+          "batch": "events-02.csv",
+          "row": 11
+        },
+        "cleared_at": "2042-10-16T09:40:53Z",
+        "support": 3,
+        "total_episodes": 5,
+        "episode_ids": [
+          "ABORT-624",
+          "ABORT-652",
+          "ABORT-667"
+        ]
+      }
+    ]
+  }
+}

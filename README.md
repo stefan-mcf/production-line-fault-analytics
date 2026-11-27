@@ -1,24 +1,43 @@
 # Production Line Fault Analytics
 
-Five qualification cycles aborted on a fictional electronics test bench. A fixture contact check appeared in the four minutes before **four of the five aborts**. The practice review records insufficient evidence and calls for a reference run to compare the programmer session log with the bench abort record.
+[![Investigation checks](https://github.com/stefan-mcf/production-line-fault-analytics/actions/workflows/checks.yml/badge.svg)](https://github.com/stefan-mcf/production-line-fault-analytics/actions/workflows/checks.yml)
 
-[Case study](docs/case-study.md) · [Example report](report/example-report.md) · [Run locally](#run-locally)
+**A Python investigation tool for recurring equipment stops in overlapping event logs.**
+
+Before deciding what to inspect, an engineer needs to know which log entries describe the same stop and which describe separate events. The analyser reconciles CSV exports by event ID, preserves source-row references, and compares the conditions recorded before each distinct stop.
+
+In the synthetic electronics test-cell example, seven rows report an abort. Validation removes one invalid row and deduplication removes one repeat, leaving **five distinct aborts**. A separate comparison shows how accepting a disputed record would change which condition appears more often before those stops.
+
+[Engineering case study](docs/case-study.md) · [Fixture results](#measured-fixture-results) · [Methodology](docs/methodology.md) · [Run the demo](#run-the-synthetic-demo)
+
+## Measured fixture results
+
+| Check | Result |
+| --- | --- |
+| Input accounting | 23 rows reconcile to 16 distinct events, 3 repeated rows and 4 quarantined rows. |
+| Abort count | 7 raw rows, 6 valid rows, 5 distinct episodes. |
+| Most common preceding condition | A fixture contact check preceded 4 of the 5 aborts within four minutes. |
+| Effect of admitting a disputed record | Profile reload preceded 2 of 5 aborts after quarantine. Admitting either disputed row independently raises that count to 3 of 5. |
+
+[Generated investigation brief](report/example-report.md) · [Reconciliation comparison](report/reconciliation-check.json)
 
 ![Timeline of five synthetic test-bench aborts and the conditions that preceded them](assets/fault-investigation.png)
 
-## Log imports and fault review
+The practice review records insufficient evidence and proposes a reference run to compare the programmer session log with the bench abort record. These counts describe the fictional fixture.
 
-The two CSV exports record some events twice. The Python analyser counts exact repeats once and retains each source row. When two rows for the same event disagree, it quarantines both and records the conflict.
+## Run the synthetic demo
 
-The analyser counts how many aborts each earlier condition preceded. Two contact checks before the same abort add one to that condition’s count. The [case study](docs/case-study.md) follows the individual events and explains how these rules affect the result.
-
-## Run locally
-
-Requires Python 3.11+ and Make. The demo uses the bundled synthetic CSVs and runs offline.
+From the repository root, use Python 3.11+ and Make. The demo runs offline with the bundled CSVs and the Python standard library.
 
 ```sh
 make demo
 make check
 ```
 
-The demo writes a Markdown brief and JSON report to `outputs/demo/`. The tests verify source references, timing boundaries and exact reproduction of both [checked-in reports](report/).
+The demo writes a Markdown brief, a JSON investigation report and the reconciliation comparison to `outputs/demo/`. The tests verify input counts, source rows, timing boundaries and exact reproduction of all three reports.
+
+## Review in 2, 5 or 15 minutes
+
+- **2 minutes** to scan the results and read the [example brief](report/example-report.md).
+- **5 minutes** to trace the duplicate abort and the disputed reload in the [case study](docs/case-study.md).
+- **15 minutes** to run the demo and inspect the [input and timing rules](docs/methodology.md), [analyser](analytics.py) and [comparison script](scripts/evaluate_reconciliation.py).

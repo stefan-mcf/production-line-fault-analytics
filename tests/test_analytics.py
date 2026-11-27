@@ -99,6 +99,34 @@ class InvestigationTests(unittest.TestCase):
             for name in ("example-report.json", "example-report.md"):
                 self.assertEqual((output / name).read_bytes(), (ROOT / "report" / name).read_bytes())
 
+    def test_reconciliation_comparison_reproduces(self):
+        with tempfile.TemporaryDirectory() as temp:
+            output = Path(temp) / "reconciliation-check.json"
+            subprocess.run([
+                sys.executable, "-B", str(ROOT / "scripts" / "evaluate_reconciliation.py"),
+                "--output", str(output),
+            ], check=True, capture_output=True)
+            self.assertEqual(output.read_bytes(), (ROOT / "report" / output.name).read_bytes())
+            comparison = json.loads(output.read_text(encoding="utf-8"))
+
+        self.assertEqual(comparison["ingestion"], self.report["ingestion"])
+        self.assertEqual(comparison["target_counts"], {
+            "raw_matching_rows": 7, "valid_matching_rows": 6, "reconciled_episodes": 5,
+        })
+        reload = comparison["profile_reload"]
+        self.assertEqual(reload["as_reconciled"], {
+            "support": 2, "total_episodes": 5, "episode_ids": ["ABORT-624", "ABORT-652"],
+        })
+        self.assertEqual([case["origin"] for case in reload["if_admitted"]], [
+            {"batch": "events-01.csv", "row": 12}, {"batch": "events-02.csv", "row": 11},
+        ])
+        self.assertEqual([case["cleared_at"] for case in reload["if_admitted"]], [
+            "2042-10-16T09:41:04Z", "2042-10-16T09:40:53Z",
+        ])
+        for case in reload["if_admitted"]:
+            self.assertEqual((case["support"], case["total_episodes"]), (3, 5))
+            self.assertEqual(case["episode_ids"], ["ABORT-624", "ABORT-652", "ABORT-667"])
+
 
 if __name__ == "__main__":
     unittest.main()

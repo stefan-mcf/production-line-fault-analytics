@@ -1,57 +1,34 @@
 # Production Line Fault Analytics case study
 
-An engineer investigating five recurring aborts on a fictional electronics test bench needs to decide where to start. A contact check appears before four of the five stops. To see whether that lead is worth following, the analyser first establishes which records belong to distinct events and which earlier conditions recur across aborts.
+Two exports for a fictional electronics test cell repeat some events and disagree on when one event cleared. This case measures how those rows affect the abort count and the conditions an engineer would inspect. The [fixture generator](../scripts/generate_fixture.py) defines the records and the practice review.
 
-[Example report](../report/example-report.md) · [JSON evidence](../report/example-report.json) · [Timing chart](../assets/fault-investigation.png)
+## Abort counts and disputed records
 
-## Reconcile the exports
+The controlled comparison in [evaluate_reconciliation.py](../scripts/evaluate_reconciliation.py) and [reconciliation-check.json](../report/reconciliation-check.json) measures both effects on the 23 rows across [events-01.csv](../data/events-01.csv) and [events-02.csv](../data/events-02.csv). Raw counting finds 7 rows carrying the `CYCLE_ABORT` label. Row validation removes `ABORT-659` (`events-01.csv` row 13, where clear precedes start), leaving 6 valid abort rows. Exact-repeat deduplication merges the two identical copies of `ABORT-610`, leaving 5 distinct abort episodes.
 
-Event `ABORT-610` appears in [the first export](../data/events-01.csv) at row 4 and [the second export](../data/events-02.csv) at row 2. Counting both records would turn five distinct aborts into six. The analyser stores one event with both source references.
+Event `PROFILE-588` appears in both exports with the same start time (`2042-10-16T09:40:29Z`) and conflicting clear times, `2042-10-16T09:41:04Z` in [events-01.csv](../data/events-01.csv) row 12 and `2042-10-16T09:40:53Z` in [events-02.csv](../data/events-02.csv) row 11. Holding both rows in quarantine keeps `programmer` / `PROFILE_RELOAD` at 2 of 5 episodes. If either version of `PROFILE-588` were admitted on its own, `PROFILE_RELOAD` support would rise to 3 of 5 episodes, putting it ahead of session retry, which precedes two aborts. Both versions have the same start time, so either would add the same third abort to the profile-reload count.
 
-The exports also disagree on when `PROFILE-588` cleared. Both rows go to quarantine. Accepting either disputed row would raise the profile reload count from two to three aborts. The conflict remains visible in the report for review.
+## Trace an abort to its source rows
 
-Of **23 input rows**, the analyser keeps 16 distinct events and three additional source references for exact repeats. It quarantines four rows. Two carry the disputed clear times. The other two specify an unknown station or a clear time before the start.
+Event `ABORT-610` has a 30-second recorded interval. It appears in [events-01.csv](../data/events-01.csv) at row 4 and again in [events-02.csv](../data/events-02.csv) at row 2.
 
-The import validates station names, event IDs, fault codes and UTC timestamps. It keeps an event with an unknown clear time and leaves its duration unknown. In the example, `ABORT-652` still contributes to the five-abort count, and `ABORT-639` records a 157-second interval across midnight.
+In [analytics.py](../analytics.py), the canonical event payload is stored once while both `(batch, row)` pointers are attached to its `origins` list. Within the preceding 240 seconds, two other-station events qualify as earlier conditions for `ABORT-610`.
 
-## Compare the events before each abort
+- `CONTACT-431` (`fixture_station` / `CONTACT_CHECK`) starts 192 seconds earlier in `events-01.csv` row 2.
+- `RETRY-817` (`programmer` / `SESSION_RETRY`) starts 64 seconds earlier in `events-01.csv` row 3.
 
-The analyser looks for events at other stations during the 240 seconds leading up to each abort. It counts a condition once per abort. For example, two fixture contact checks appear before `ABORT-624` and contribute one to the tally.
+The same origin-retention rule applies to the other exact repeats (`CONTACT-437` and `RETRY-826`). The checked-in [example report](../report/example-report.md) lists every episode and preceding event with its source batch and row number, and the [JSON evidence package](../report/example-report.json) records every quarantined row alongside its rejection reason.
 
-| Earlier condition | Aborts preceded |
-| --- | ---: |
-| Fixture contact check | 4 / 5 |
-| Programmer profile reload | 2 / 5 |
-| Programmer session retry | 2 / 5 |
+## Events before each abort
 
-Contact check and profile reload appeared together before two aborts. Contact check and session retry appeared together before one. The analyser counts a pair only when both conditions precede the same abort.
+Across the five reconciled `CYCLE_ABORT` episodes, `fixture_station` / `CONTACT_CHECK` precedes 4 of 5 aborts, while `programmer` / `PROFILE_RELOAD` and `programmer` / `SESSION_RETRY` each precede 2 of 5. Same-episode pairs show `CONTACT_CHECK` + `PROFILE_RELOAD` before 2 of 5 aborts (`ABORT-624`, `ABORT-652`) and `CONTACT_CHECK` + `SESSION_RETRY` before 1 of 5 (`ABORT-610`).
 
-Three records show where the window starts and ends.
+[Event timing chart](../assets/fault-investigation.png)
 
-- `CONTACT-463` starts exactly 240 seconds before `ABORT-652` and counts.
-- `CONTACT-457` starts at the same second as `ABORT-639`. The timestamp supplies no ordering evidence.
-- `RETRY-844` starts 241 seconds before `ABORT-667` and falls outside the window.
+[Timestamp and counting rules](methodology.md)
 
 ## Next check
 
-The supplied [practice assessment](../data/practice-review.json) records insufficient evidence. It calls for running a reference module through the qualification cycle and comparing the programmer session log with the bench abort record.
+The generated brief carries a supplied practice review from [practice-review.json](../data/practice-review.json) with an assessment of insufficient evidence. Its proposed next check is to run a reference module through the qualification cycle and compare the programmer session log with the bench abort record.
 
-The count measures how often a contact check appeared before an abort in this fixture. Estimating how often the check is followed by an abort requires comparable periods with completed cycles and adequate log coverage.
-
-## Verification
-
-The fixture generator defines every event and the practice assessment. The [Python analyser](../analytics.py) records accepted events and their sources, quarantined rows, timing, and condition counts in JSON. The [chart script](../scripts/render_investigation.py) draws the figure from that JSON file.
-
-Run `make demo` to regenerate the reports. Run `make check` to test reconciliation, source pointers, lookback boundaries and report reproduction. [Fixture generator](../scripts/generate_fixture.py) · [Tests](../tests/test_analytics.py)
-
-## Reporting and ML evaluation
-
-A future reporting model could keep distinct events, source rows and calendar-day durations in separate tables. Source rows would support drill-through without multiplying event counts. Splitting a known interval at midnight would preserve its recorded duration. Whole-cell downtime would require a separate definition of cell state because equipment intervals can overlap.
-
-Three possible experiments would use different targets and baselines.
-
-- **Unusual episodes.** Compare an anomaly ranking with simple ordering by duration or recurrence.
-- **Investigation priority.** Predict which findings reviewers mark worth checking. Compare an interpretable classifier with ranking by event count at the same review budget.
-- **Relationship review.** Compare a model that uses lead times and episode counts with episode-support and majority baselines. Train against explicit reviewer assessments of which relationships merit follow-up.
-
-An evaluation would group cases that share source records and reserve a later period for testing. Features would use only information available at the review cutoff. Practice assessments, unresolved evidence and unreviewed cases would stay outside the supervised target.
+A preceding contact check can reflect a shared upstream step, routine fixture setup, or clock offset between devices. Estimating how often a check is followed by an abort would require comparable intervals with completed cycles and adequate log coverage.
