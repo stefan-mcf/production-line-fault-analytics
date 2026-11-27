@@ -1,0 +1,9 @@
+{
+  "state": "practice",
+  "target": {
+    "station": "test_bench",
+    "code": "CYCLE_ABORT"
+  },
+  "assessment": "insufficient_evidence",
+  "next_check": "Run a reference module through the qualification cycle and compare the programmer session log with the bench abort record."
+}
