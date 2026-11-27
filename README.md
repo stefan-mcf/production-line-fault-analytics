@@ -14,7 +14,9 @@ In two generated test-cell exports, **seven abort rows resolve to five distinct 
 
 The browser demo opens on an abort and shows the earlier events, their timing and the original CSV rows. Selecting another abort changes the evidence on screen. The investigation’s supplied practice assessment stays visible alongside its proposed next check.
 
-![Fault review dashboard with five aborts, source rows for the selected episode and the investigation’s practice assessment](assets/fault-review-dashboard.png)
+![Fault review dashboard showing the events and CSV source rows for ABORT-624 beside the investigation assessment](assets/fault-review-dashboard.png)
+
+*Two contact checks appear before ABORT-624. The earlier check links to both exports. Together the two checks contribute one episode to the condition count.*
 
 The prototype’s finding review uses three assessments: **Needs checking**, **Expected / no further check**, and **Not enough information**. Relationship review has its own labels and eligibility rules. The public dashboard shows a read-only practice assessment of **Not enough information**, which is excluded from training. [Label definitions and eligibility](docs/case-study.md#review-labels-and-training-eligibility)
 
@@ -70,9 +72,9 @@ The two exports contain 23 rows. Condition counts use the five reconciled test-b
 | **Programmer session retry** | **2 / 5** | Aborts with an earlier `SESSION_RETRY`. |
 | **Most frequent pair** | **2 / 5** | Contact check and profile reload before the same abort. |
 
-![Timeline of five reconciled test-bench aborts and preceding other-station conditions within a four-minute window](assets/fault-investigation.png)
+![Aligned timeline of five test-bench aborts showing contact checks, profile reloads and session retries in the preceding four minutes](assets/fault-investigation.png)
 
-*Each diamond marks an abort at minute zero. Dots show earlier starts. Both contact checks before `ABORT-624` appear on the timeline and contribute one episode to the count on the right.*
+*Each row is aligned to the recorded abort. The shapes identify earlier event starts, and the legend counts distinct aborts for each condition.*
 
 ## The disputed reload record
 

@@ -31,15 +31,19 @@ function sourceLink(origin) {
   return link;
 }
 
-function timeRow(record, lookback) {
+function timeRow(records, lookback) {
+  const [first] = records;
   const row = tag("div", "", "time-row");
   const track = tag("div", "", "time-track");
-  const mark = tag("span", "", "time-mark");
-  if (record.lead_seconds === undefined) mark.classList.add("abort");
-  if (record.station === "programmer") mark.classList.add("programmer");
-  mark.style.setProperty("--position", `${100 * (1 - (record.lead_seconds ?? 0) / lookback)}%`);
-  track.append(mark);
-  row.append(tag("span", sentenceCase(record.code), "time-label"), track);
+  const label = tag("span", sentenceCase(first.code), "time-label");
+  if (records.length > 1) label.append(tag("span", ` ×${records.length}`, "time-count"));
+  for (const record of records) {
+    const mark = tag("span", "", "time-mark");
+    mark.classList.add(record.code.toLowerCase().replaceAll("_", "-"));
+    mark.style.setProperty("--position", `${100 * (1 - (record.lead_seconds ?? 0) / lookback)}%`);
+    track.append(mark);
+  }
+  row.append(label, track);
   return row;
 }
 
@@ -59,7 +63,12 @@ function evidenceRow(record) {
 
 function showEpisode(episode, lookback) {
   const {event, preceding} = episode;
-  const records = [...preceding, event];
+  const lanes = new Map();
+  for (const record of [...preceding, event]) {
+    const key = `${record.station}/${record.code}`;
+    if (!lanes.has(key)) lanes.set(key, []);
+    lanes.get(key).push(record);
+  }
   const duration = event.duration_seconds;
   element("event-id").textContent = event.event_id;
   element("event-context").textContent = `${sentenceCase(event.station)} · ${dayFormat.format(new Date(event.started_at))} · ${timeFormat.format(new Date(event.started_at))} UTC`;
@@ -74,7 +83,8 @@ function showEpisode(episode, lookback) {
     ticks.append(tag("span", minutes === 0 ? "0" : `−${minutes} min`));
   }
   axis.append(tag("span", ""), ticks);
-  element("timeline").replaceChildren(...records.map((record) => timeRow(record, lookback)), axis);
+  const rows = Array.from(lanes.values(), (records) => timeRow(records, lookback));
+  element("timeline").replaceChildren(...rows, axis);
   element("evidence").replaceChildren(...[event, ...preceding].map(evidenceRow));
 }
 
@@ -91,25 +101,15 @@ function render(report, comparison) {
     definition("Quarantined rows", ingestion.invalid_rows + ingestion.conflict_rows, "metric"),
   );
   element("lookback").textContent = `${lookback / 60}-minute lookback`;
-  const buttons = [];
-  episodes.forEach((episode) => {
-    const start = new Date(episode.event.started_at);
-    const button = tag("button", "", "episode-button");
-    button.type = "button";
-    button.setAttribute("aria-pressed", String(episode === defaultEpisode));
-    button.append(
-      tag("span", episode.event.event_id, "identifier"),
-      tag("span", `${dayFormat.format(start)} · ${timeFormat.format(start)}`, "small"),
-    );
-    button.addEventListener("click", () => {
-      buttons.forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
-      showEpisode(episode, lookback);
-    });
-    buttons.push(button);
-    const item = tag("li", "");
-    item.append(button);
-    element("episodes").append(item);
-  });
+  const selector = element("episode-select");
+  const episodeById = new Map(episodes.map((episode) => [episode.event.event_id, episode]));
+  selector.replaceChildren(...Array.from(episodeById.keys(), (eventId) => {
+    const option = tag("option", eventId);
+    option.value = eventId;
+    return option;
+  }));
+  selector.value = defaultEpisode.event.event_id;
+  selector.addEventListener("change", () => showEpisode(episodeById.get(selector.value), lookback));
   showEpisode(defaultEpisode, lookback);
 
   element("review-mode").textContent = `${sentenceCase(review.state)} · all aborts`;
@@ -134,7 +134,6 @@ function render(report, comparison) {
       : alternatives.map(({support, total_episodes, origin}) =>
         definition(`Admit ${origin.batch}`, `${support} of ${total_episodes}`))),
   );
-  element("comparison-note").textContent = "The two versions agree on start time and disagree on clear time.";
 }
 
 async function readReport(path) {

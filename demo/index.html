@@ -9,34 +9,29 @@
   <script src="dashboard.js" defer></script>
 </head>
 <body>
-  <header class="bar">
-    <div class="frame bar-inner">
-      <span class="product">Production Line Fault Analytics</span>
-      <a href="../report/example-report.md">Investigation brief <span aria-hidden="true">↗</span></a>
-    </div>
-  </header>
   <main class="frame">
-    <div class="page-heading">
+    <header class="page-heading">
       <div>
         <h1>Fault review</h1>
         <p>Electronics qualification test cell</p>
       </div>
-      <a class="file-link" href="../report/example-report.json">Report JSON <span aria-hidden="true">↗</span></a>
-    </div>
+      <nav class="report-links" aria-label="Investigation reports">
+        <a href="../report/example-report.md">Investigation brief <span aria-hidden="true">↗</span></a>
+        <a href="../report/example-report.json">Report JSON <span aria-hidden="true">↗</span></a>
+      </nav>
+    </header>
 
     <p id="status" role="status">Loading investigation…</p>
     <div id="dashboard" hidden>
-      <dl class="metrics" id="metrics" aria-label="Investigation counts"></dl>
+      <div class="context-bar">
+        <dl class="metrics" id="metrics" aria-label="Investigation counts"></dl>
+        <div class="episode-control">
+          <label for="episode-select">Abort episode</label>
+          <select id="episode-select" aria-controls="selected-event"></select>
+        </div>
+      </div>
       <div class="workspace">
-        <section class="panel episodes" aria-labelledby="episodes-heading">
-          <div class="panel-header">
-            <h2 id="episodes-heading">Abort episodes</h2>
-            <span class="small">UTC</span>
-          </div>
-          <ul id="episodes" class="episode-list"></ul>
-        </section>
-
-        <section class="panel event" aria-labelledby="event-id">
+        <section class="panel event" id="selected-event" aria-labelledby="event-id">
           <div class="panel-header event-header">
             <div>
               <h2 id="event-id" aria-live="polite"></h2>
@@ -70,16 +65,13 @@
               <p id="next-check"></p>
             </div>
           </section>
-          <section class="panel comparison" aria-labelledby="comparison-heading">
-            <div class="panel-header">
+          <section class="comparison" aria-labelledby="comparison-heading">
+            <div class="comparison-header">
               <h2 id="comparison-heading">Disputed reload</h2>
-              <a href="../report/reconciliation-check.json" aria-label="Open the reconciliation comparison JSON">↗</a>
+              <a href="../report/reconciliation-check.json" aria-label="Open the reconciliation comparison JSON">Compare <span aria-hidden="true">↗</span></a>
             </div>
-            <div class="review-body">
-              <p class="small" id="comparison-context"></p>
-              <dl class="comparison-values" id="comparison-values"></dl>
-              <p id="comparison-note"></p>
-            </div>
+            <p class="small" id="comparison-context"></p>
+            <dl class="comparison-values" id="comparison-values"></dl>
           </section>
         </div>
       </div>
