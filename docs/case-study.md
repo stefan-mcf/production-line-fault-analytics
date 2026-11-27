@@ -1,6 +1,6 @@
 # Production Line Fault Analytics case study
 
-Two exports for a fictional electronics test cell repeat some events and disagree on when one event cleared. This case measures how those rows affect the abort count and the conditions an engineer would inspect. The [fixture generator](../scripts/generate_fixture.py) defines the records and the practice review.
+Two generated test-cell exports repeat some events and disagree on when one event cleared. The analysis measures how those rows affect the abort count and the conditions an engineer would inspect. The [fixture generator](../scripts/generate_fixture.py) defines the records and the practice review.
 
 ## Abort counts and disputed records
 

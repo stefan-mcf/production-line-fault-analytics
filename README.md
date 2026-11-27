@@ -6,9 +6,9 @@
 
 Before deciding what to inspect, an engineer needs to know which log entries describe the same stop and which describe separate events. The analyser reconciles CSV exports by event ID, preserves source-row references, and compares the conditions recorded before each distinct stop.
 
-In the synthetic electronics test-cell example, seven rows report an abort. Validation removes one invalid row and deduplication removes one repeat, leaving **five distinct aborts**. A separate comparison shows how accepting a disputed record would change which condition appears more often before those stops.
+In the generated test-cell logs, seven rows report an abort. Validation removes one invalid row and deduplication removes one repeat, leaving **five distinct aborts**. A separate comparison shows how accepting a disputed record would change which condition appears more often before those stops.
 
-[Engineering case study](docs/case-study.md) · [Fixture results](#measured-fixture-results) · [Methodology](docs/methodology.md) · [Run the demo](#run-the-synthetic-demo)
+[Engineering case study](docs/case-study.md) · [Fixture results](#measured-fixture-results) · [Methodology](docs/methodology.md) · [Run the demo](#run-locally)
 
 ## Measured fixture results
 
@@ -19,13 +19,13 @@ In the synthetic electronics test-cell example, seven rows report an abort. Vali
 | Most common preceding condition | A fixture contact check preceded 4 of the 5 aborts within four minutes. |
 | Effect of admitting a disputed record | Profile reload preceded 2 of 5 aborts after quarantine. Admitting either disputed row independently raises that count to 3 of 5. |
 
-[Generated investigation brief](report/example-report.md) · [Reconciliation comparison](report/reconciliation-check.json)
+[Investigation brief](report/example-report.md) · [Reconciliation comparison](report/reconciliation-check.json)
 
-![Timeline of five synthetic test-bench aborts and the conditions that preceded them](assets/fault-investigation.png)
+![Timeline of five test-bench aborts and the conditions that preceded them](assets/fault-investigation.png)
 
-The practice review records insufficient evidence and proposes a reference run to compare the programmer session log with the bench abort record. These counts describe the fictional fixture.
+The practice review records insufficient evidence and proposes a reference run to compare the programmer session log with the bench abort record.
 
-## Run the synthetic demo
+## Run locally
 
 From the repository root, use Python 3.11+ and Make. The demo runs offline with the bundled CSVs and the Python standard library.
 

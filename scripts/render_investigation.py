@@ -40,11 +40,11 @@ def render(report: dict[str, Any], output: Path) -> None:
 
     figure = Figure(figsize=(8.5, 4.55), dpi=160, facecolor="white")
     FigureCanvasAgg(figure)
-    figure.text(0.075, 0.923, "FICTIONAL ELECTRONICS QUALIFICATION CELL", color=COLORS[0], weight="bold", size=9)
+    figure.text(0.075, 0.923, "ELECTRONICS QUALIFICATION TEST CELL", color=COLORS[0], weight="bold", size=9)
     figure.text(0.075, 0.838, "What preceded each test abort?", color=INK, weight="bold", size=24)
     figure.text(
         0.075, 0.780,
-        f"{len(episodes)} synthetic cycles aligned at the abort. Dots show earlier event starts.",
+        f"{len(episodes)} cycles aligned at the abort. Dots show earlier event starts.",
         color=MUTED, size=9.6,
     )
 
@@ -107,8 +107,9 @@ def render(report: dict[str, Any], output: Path) -> None:
         "Timing supports investigation. Establishing a cause requires independent evidence.",
         color=MUTED, size=8.5,
     )
+    figure.text(0.935, 0.056, "Generated test data", color=MUTED, size=8.5, ha="right")
     output.parent.mkdir(parents=True, exist_ok=True)
-    figure.savefig(output, dpi=figure.dpi, metadata={"Title": "Fictional electronics qualification event timing"})
+    figure.savefig(output, dpi=figure.dpi, metadata={"Title": "Electronics qualification event timing"})
 
 
 def main() -> None:
