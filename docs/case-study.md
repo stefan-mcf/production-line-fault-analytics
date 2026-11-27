@@ -27,6 +27,43 @@ Across the five reconciled `CYCLE_ABORT` episodes, `fixture_station` / `CONTACT_
 
 [Timestamp and counting rules](methodology.md)
 
+## Review labels and training eligibility
+
+The broader dashboard prototype records a review decision against the evidence the reviewer saw. A reviewer opens a finding, checks its episodes and source rows, then records an assessment and a next check. Reviewers choose an Actual or Practice session before making decisions. Corrections to grouping or equipment attribution follow a separate workflow.
+
+```mermaid
+flowchart LR
+    A["Finding with source rows"] --> B["Review assessment"]
+    B --> C["Review history"]
+    B --> D{"Current eligible Actual review?"}
+    D -->|Yes| E["Versioned label set"]
+    D -->|Practice or excluded| F["Review record only"]
+    E --> G["Grouped evaluation against rules"]
+```
+
+### Finding review
+
+| Assessment | What the reviewer records | Use in review-priority training |
+| --- | --- | --- |
+| **Needs checking** | The evidence warrants a follow-up. | Eligible positive from a current Actual assessment. |
+| **Expected / no further check** | The condition is expected in the available context, and the reviewer has enough evidence to close the finding. | Eligible negative under the same rules. |
+| **Not enough information** | More context is needed to decide. The reviewer can record a specific next check. | Retained as a review record and excluded from the binary label set. |
+
+The eligibility check requires a current assessment with source provenance. Practice decisions, stale evidence, unresolved grouping or attribution issues and reviewer disagreements stay outside the label set. Skipping a finding leaves it unlabelled. When evidence changes, a new assessment can be made while the earlier decision remains in the review history.
+
+### Relationship review
+
+The prototype also lets a reviewer assess a proposed relationship between a finding and one or more preceding conditions. This is a separate judgement from deciding whether the finding needs checking.
+
+| Assessment | What the reviewer records | Use in relationship training |
+| --- | --- | --- |
+| **Plausible relationship** | The available context supports investigating the relationship. | Eligible positive from a current, explicitly contributed Actual assessment. |
+| **Appears unrelated** | The reviewer has enough context to assess the conditions as unrelated. | Eligible negative under the same rules. |
+| **Expected sequence** | The conditions appear to follow normal operating order. | Retained separately and excluded from the binary label set. |
+| **Not enough information** | Clock alignment, attribution or other context is insufficient to assess the relationship. | Retained as a review record and excluded from the binary label set. |
+
+The prototype uses separate versioned label sets for review priority and relationship plausibility. For evaluation, related conditions and shared source evidence stay in the same partition. Unusual-episode ranking is a separate unsupervised task. The public example contains a bundled practice assessment and a read-only dashboard view of the report. [Dashboard preview](../README.md#fault-review-dashboard) · [Evaluation design](methodology.md#future-ml-evaluation-plan)
+
 ## Next check
 
 The generated brief carries a supplied practice review from [practice-review.json](../data/practice-review.json) with an assessment of insufficient evidence. Its proposed next check is to run a reference module through the qualification cycle and compare the programmer session log with the bench abort record.

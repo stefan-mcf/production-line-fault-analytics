@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fault review | Production Line Fault Analytics</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="dashboard.css">
+  <script src="dashboard.js" defer></script>
+</head>
+<body>
+  <header class="bar">
+    <div class="frame bar-inner">
+      <span class="product">Production Line Fault Analytics</span>
+      <a href="../report/example-report.md">Investigation brief <span aria-hidden="true">↗</span></a>
+    </div>
+  </header>
+  <main class="frame">
+    <div class="page-heading">
+      <div>
+        <h1>Fault review</h1>
+        <p>Electronics qualification test cell</p>
+      </div>
+      <a class="file-link" href="../report/example-report.json">Report JSON <span aria-hidden="true">↗</span></a>
+    </div>
+
+    <p id="status" role="status">Loading investigation…</p>
+    <div id="dashboard" hidden>
+      <dl class="metrics" id="metrics" aria-label="Investigation counts"></dl>
+      <div class="workspace">
+        <section class="panel episodes" aria-labelledby="episodes-heading">
+          <div class="panel-header">
+            <h2 id="episodes-heading">Abort episodes</h2>
+            <span class="small">UTC</span>
+          </div>
+          <ul id="episodes" class="episode-list"></ul>
+        </section>
+
+        <section class="panel event" aria-labelledby="event-id">
+          <div class="panel-header event-header">
+            <div>
+              <h2 id="event-id" aria-live="polite"></h2>
+              <p id="event-context" class="small"></p>
+            </div>
+            <div id="event-duration" class="duration"></div>
+          </div>
+          <div class="event-body">
+            <div class="subheading">
+              <h3>Sequence before abort</h3>
+              <span class="small" id="lookback"></span>
+            </div>
+            <div id="timeline" class="timeline" aria-hidden="true"></div>
+            <div class="subheading evidence-heading">
+              <h3>Source evidence</h3>
+            </div>
+            <ul id="evidence" class="evidence"></ul>
+          </div>
+        </section>
+
+        <div class="review-column">
+          <section class="panel review" aria-labelledby="review-heading">
+            <div class="panel-header">
+              <h2 id="review-heading">Investigation review</h2>
+            </div>
+            <div class="review-body">
+              <div class="small" id="review-mode"></div>
+              <p id="assessment" class="assessment"></p>
+              <p id="review-eligibility" class="small"></p>
+              <h3>Next check</h3>
+              <p id="next-check"></p>
+            </div>
+          </section>
+          <section class="panel comparison" aria-labelledby="comparison-heading">
+            <div class="panel-header">
+              <h2 id="comparison-heading">Disputed reload</h2>
+              <a href="../report/reconciliation-check.json" aria-label="Open the reconciliation comparison JSON">↗</a>
+            </div>
+            <div class="review-body">
+              <p class="small" id="comparison-context"></p>
+              <dl class="comparison-values" id="comparison-values"></dl>
+              <p id="comparison-note"></p>
+            </div>
+          </section>
+        </div>
+      </div>
+      <p class="footer">Generated test records</p>
+    </div>
+  </main>
+</body>
+</html>

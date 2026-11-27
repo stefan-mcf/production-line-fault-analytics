@@ -8,7 +8,15 @@ When a qualification test aborts, an engineer needs to know how many distinct st
 
 In two generated test-cell exports, **seven abort rows resolve to five distinct episodes**. A fixture contact check precedes four of those episodes. Admitting either version of a disputed programmer record would move profile reload ahead of session retry by frequency.
 
-[Engineering case study](docs/case-study.md) · [Reconciliation results](#measured-reconciliation-results) · [Methodology](docs/methodology.md) · [Run locally](#run-locally)
+[Engineering case study](docs/case-study.md) · [Dashboard](#fault-review-dashboard) · [Labelling workflow](docs/case-study.md#review-labels-and-training-eligibility) · [Reconciliation results](#measured-reconciliation-results) · [Run locally](#run-locally)
+
+## Fault review dashboard
+
+The browser demo opens on an abort and shows the earlier events, their timing and the original CSV rows. Selecting another abort changes the evidence on screen. The investigation’s supplied practice assessment stays visible alongside its proposed next check.
+
+![Fault review dashboard with five aborts, source rows for the selected episode and the investigation’s practice assessment](assets/fault-review-dashboard.png)
+
+The prototype’s finding review uses three assessments: **Needs checking**, **Expected / no further check**, and **Not enough information**. Relationship review has its own labels and eligibility rules. The public dashboard shows a read-only practice assessment of **Not enough information**, which is excluded from training. [Label definitions and eligibility](docs/case-study.md#review-labels-and-training-eligibility)
 
 ## The reconciliation problem
 
@@ -34,6 +42,7 @@ flowchart LR
     D --> E["Investigation report"]
     Q --> E
     R["Supplied practice review"] --> E
+    E --> V["Browser review dashboard"]
 ```
 
 | Workstream | What was built | Representative code | Checked-in evidence / docs |
@@ -42,6 +51,7 @@ flowchart LR
 | **Event reconciliation** | Groups valid rows by ID, retains physical CSV line numbers and records rejected versions in quarantine. | [Grouping and origins](analytics.py#L76-L103) | [Structured report](report/example-report.json) |
 | **Episode analysis** | Matches earlier starts, counts distinct episodes per condition and assembles a source-linked brief. | [Analysis and reporting](analytics.py#L110-L219) | [Investigation brief](report/example-report.md) |
 | **Reconciliation comparison** | Checks how the abort count changes at each stage and reruns the analysis with each disputed row admitted separately. | [Comparison script](scripts/evaluate_reconciliation.py) | [Comparison results](report/reconciliation-check.json) |
+| **Review dashboard** | Reads the report, lets the reviewer change episodes and shows each event with its original rows. | [Browser demo](demo/index.html) | [Dashboard preview](#fault-review-dashboard) |
 | **Reproducibility** | Generates exports and review input, renders the chart from JSON, and checks that the reports reproduce byte for byte. | [Fixture generator](scripts/generate_fixture.py) · [Chart renderer](scripts/render_investigation.py) · [Tests](tests/test_analytics.py) | [CI workflow](.github/workflows/checks.yml) |
 
 The reporting design keeps event counts, source origins and daily duration slices at separate grains. The ML evaluation plan sets out review targets, baselines and leakage controls. Both are designs for future work. [Reporting and ML plans](docs/methodology.md#proposed-reporting-and-ml-evaluation)
@@ -87,8 +97,16 @@ make check
 
 `make demo` writes the Markdown brief, JSON report and reconciliation comparison to `outputs/demo/`. `make check` verifies source row numbers, midnight crossings, missing clear times and the exact lookback boundaries. The suite also checks byte-for-byte report reproduction and runs the investigation with the export order reversed. [Verification tests](tests/test_analytics.py)
 
+To browse the dashboard, serve the repository from its root and open the demo on localhost. The dashboard reads the checked-in reports, so this works immediately after cloning. [Dashboard source](demo/index.html)
+
+```sh
+python3 -m http.server 8000 --bind 127.0.0.1
+```
+
+[Open the local dashboard](http://127.0.0.1:8000/demo/)
+
 ## Review in 2, 5 or 15 minutes
 
-- **2 minutes** to scan the results and see which conditions preceded each abort. [Investigation brief](report/example-report.md)
-- **5 minutes** to trace an exact repeat and inspect how admitting the disputed programmer record changes the count. [Case study](docs/case-study.md) · [Comparison results](report/reconciliation-check.json)
+- **2 minutes** to see the episode evidence and practice assessment. [Dashboard preview](#fault-review-dashboard) · [Investigation brief](report/example-report.md)
+- **5 minutes** to trace a repeated event, inspect the disputed record and see which review decisions qualify as labels. [Case study](docs/case-study.md) · [Comparison results](report/reconciliation-check.json)
 - **15 minutes** to run both Make targets and follow the implementation from parsing through episode analysis. [Methodology](docs/methodology.md) · [Analyser](analytics.py) · [Tests](tests/test_analytics.py)
