@@ -3,79 +3,87 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Fault review | Production Line Fault Analytics</title>
+  <title>Recorded fault review | Production Line Fault Analytics</title>
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="dashboard.css">
   <script src="dashboard.js" defer></script>
 </head>
 <body>
   <main class="frame">
-    <header class="page-heading">
-      <div>
-        <h1>Fault review</h1>
-        <p>Electronics qualification test cell</p>
-      </div>
+    <div class="page-strip">
+      <span class="current-page" aria-current="page">Recorded review</span>
       <nav class="report-links" aria-label="Investigation reports">
         <a href="../report/example-report.md">Investigation brief <span aria-hidden="true">↗</span></a>
         <a href="../report/example-report.json">Report JSON <span aria-hidden="true">↗</span></a>
       </nav>
-    </header>
+    </div>
 
-    <p id="status" role="status">Loading investigation…</p>
-    <div id="dashboard" hidden>
-      <div class="context-bar">
-        <dl class="metrics" id="metrics" aria-label="Investigation counts"></dl>
-        <div class="episode-control">
-          <label for="episode-select">Abort episode</label>
-          <select id="episode-select" aria-controls="selected-event"></select>
+    <div class="report-canvas">
+      <header class="page-heading">
+        <h1>Recorded fault review</h1>
+        <p>Electronics qualification test cell</p>
+      </header>
+
+      <p id="status" role="status">Loading investigation…</p>
+      <div id="dashboard" hidden>
+        <div class="report-filters">
+          <div class="episode-control">
+            <label for="episode-select">Abort episode</label>
+            <select id="episode-select" aria-controls="selected-event"></select>
+          </div>
+          <dl class="scope">
+            <div><dt>Investigation target</dt><dd id="investigation-target"></dd></div>
+            <div><dt>Preceding window</dt><dd id="lookback"></dd></div>
+          </dl>
         </div>
-      </div>
-      <div class="workspace">
-        <section class="panel event" id="selected-event" aria-labelledby="event-id">
-          <div class="panel-header event-header">
-            <div>
-              <h2 id="event-id" aria-live="polite"></h2>
-              <p id="event-context" class="small"></p>
-            </div>
-            <div id="event-duration" class="duration"></div>
-          </div>
-          <div class="event-body">
-            <div class="subheading">
-              <h3>Sequence before abort</h3>
-              <span class="small" id="lookback"></span>
-            </div>
-            <div id="timeline" class="timeline" aria-hidden="true"></div>
-            <div class="subheading evidence-heading">
-              <h3>Source evidence</h3>
-            </div>
-            <ul id="evidence" class="evidence"></ul>
-          </div>
-        </section>
+        <dl class="metrics" id="metrics" aria-label="Investigation counts"></dl>
 
-        <div class="review-column">
-          <section class="panel review" aria-labelledby="review-heading">
-            <div class="panel-header">
+        <div class="workspace">
+          <div class="review-column">
+            <section class="panel candidate-chart" aria-labelledby="candidate-heading">
+              <h2 id="candidate-heading">Preceding conditions</h2>
+              <p class="small">Aborts with each condition in the preceding window</p>
+              <ul id="candidate-support" class="candidate-bars"></ul>
+            </section>
+            <section class="panel review" aria-labelledby="review-heading">
               <h2 id="review-heading">Investigation review</h2>
-            </div>
-            <div class="review-body">
-              <div class="small" id="review-mode"></div>
+              <p class="small" id="review-mode"></p>
               <p id="assessment" class="assessment"></p>
               <p id="review-eligibility" class="small"></p>
               <h3>Next check</h3>
               <p id="next-check"></p>
+            </section>
+            <section class="panel comparison" aria-labelledby="comparison-heading">
+              <div class="subheading">
+                <h2 id="comparison-heading">Disputed reload</h2>
+                <a href="../report/reconciliation-check.json" aria-label="Open the reconciliation comparison JSON">Compare <span aria-hidden="true">↗</span></a>
+              </div>
+              <p class="small" id="comparison-context"></p>
+              <dl class="comparison-values" id="comparison-values"></dl>
+            </section>
+          </div>
+
+          <section class="panel event" id="selected-event" aria-labelledby="event-id">
+            <div class="event-header">
+              <div>
+                <h2 id="event-id" aria-live="polite"></h2>
+                <p id="event-context" class="small"></p>
+              </div>
+              <div id="event-duration" class="duration"></div>
             </div>
-          </section>
-          <section class="comparison" aria-labelledby="comparison-heading">
-            <div class="comparison-header">
-              <h2 id="comparison-heading">Disputed reload</h2>
-              <a href="../report/reconciliation-check.json" aria-label="Open the reconciliation comparison JSON">Compare <span aria-hidden="true">↗</span></a>
+            <h3 class="event-section">Sequence before abort</h3>
+            <div id="timeline" class="timeline" aria-hidden="true"></div>
+            <h3 class="event-section" id="evidence-heading">Source evidence</h3>
+            <div class="table-region" role="region" aria-labelledby="evidence-heading" tabindex="0">
+              <table class="evidence" aria-labelledby="evidence-heading">
+                <thead><tr><th scope="col">Event</th><th scope="col">Timing</th><th scope="col">Source row</th></tr></thead>
+                <tbody id="evidence"></tbody>
+              </table>
             </div>
-            <p class="small" id="comparison-context"></p>
-            <dl class="comparison-values" id="comparison-values"></dl>
           </section>
         </div>
+        <p class="footer">Generated test records</p>
       </div>
-      <p class="footer">Generated test records</p>
     </div>
   </main>
 </body>

@@ -12,8 +12,6 @@ In two generated test-cell exports, **seven abort rows resolve to five distinct 
 
 ## Fault review dashboard
 
-The browser demo opens on an abort and shows the earlier events, their timing and the original CSV rows. Selecting another abort changes the evidence on screen. The investigation’s supplied practice assessment stays visible alongside its proposed next check.
-
 ![Fault review dashboard showing the events and CSV source rows for ABORT-624 beside the investigation assessment](assets/fault-review-dashboard.png)
 
 *Two contact checks appear before ABORT-624. The earlier check links to both exports. Together the two checks contribute one episode to the condition count.*

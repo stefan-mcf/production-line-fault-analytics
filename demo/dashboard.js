@@ -48,15 +48,30 @@ function timeRow(records, lookback) {
 }
 
 function evidenceRow(record) {
-  const row = tag("li", "");
-  const label = tag("div", "");
-  const sources = tag("div", "");
+  const row = tag("tr", "");
+  const label = tag("td", "");
+  const sources = tag("td", "");
   label.append(tag("strong", sentenceCase(record.code)), tag("span", record.event_id, "identifier"));
   sources.append(...record.origins.map(sourceLink));
   row.append(
     label,
-    tag("span", record.lead_seconds === undefined ? "Abort start" : `${record.lead_seconds} s earlier`, "timing"),
+    tag("td", record.lead_seconds === undefined ? "Abort start" : `${record.lead_seconds} s earlier`, "timing"),
     sources,
+  );
+  return row;
+}
+
+function supportBar(candidate) {
+  const row = tag("li", "");
+  const track = tag("span", "", "candidate-track");
+  const fill = tag("span", "", "candidate-fill");
+  track.setAttribute("aria-hidden", "true");
+  fill.style.width = `${100 * candidate.support / candidate.total_episodes}%`;
+  track.append(fill);
+  row.append(
+    tag("span", sentenceCase(candidate.code)),
+    track,
+    tag("span", `${candidate.support}/${candidate.total_episodes}`, "candidate-count"),
   );
   return row;
 }
@@ -90,7 +105,7 @@ function showEpisode(episode, lookback) {
 
 function render(report, comparison) {
   const {ingestion, investigation, review} = report;
-  const {episodes, lookback_seconds: lookback} = investigation;
+  const {candidates, episodes, lookback_seconds: lookback, target} = investigation;
   if (!episodes.length) throw new Error("No abort episodes in the investigation report.");
   const defaultEpisode = episodes.find(({event}) => event.event_id === "ABORT-610") ?? episodes[0];
 
@@ -100,7 +115,9 @@ function render(report, comparison) {
     definition("Distinct aborts", episodes.length, "metric"),
     definition("Quarantined rows", ingestion.invalid_rows + ingestion.conflict_rows, "metric"),
   );
-  element("lookback").textContent = `${lookback / 60}-minute lookback`;
+  element("investigation-target").textContent = `${sentenceCase(target.station)} · ${sentenceCase(target.code)}`;
+  element("lookback").textContent = `${lookback / 60} minutes before abort`;
+  element("candidate-support").replaceChildren(...candidates.map(supportBar));
   const selector = element("episode-select");
   const episodeById = new Map(episodes.map((episode) => [episode.event.event_id, episode]));
   selector.replaceChildren(...Array.from(episodeById.keys(), (eventId) => {
